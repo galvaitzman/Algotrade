@@ -17,7 +17,7 @@ delta = 5
 
 def create_all_dates_df():
     all_dates_df = df.drop(columns=date_columns[1:])
-
+    stock_columns.append('SPY_return_Adj Close')
     i = 0
     all_dates_df = all_dates_df.rename(columns={"XLY_return_Date": "Date"})
 
@@ -92,5 +92,7 @@ def create_aggregate_df():
     aggregate_df.to_csv('aggregate_df.csv')
 
 
-# create_all_dates_df()
-create_aggregate_df()
+create_all_dates_df()
+#create_aggregate_df()
+
+#def calculate_target()
