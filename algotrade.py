@@ -10,7 +10,7 @@ stock_columns = [col for col in df.columns if col not in date_columns and col !=
 dates = df[date_columns[:]]
 
 # first_date = datetime.datetime.strptime(dates.iloc[0].sort_values(ascending=True)[0], '%Y-%m-%d')
-first_date = datetime.datetime.strptime('2010-02-01', '%Y-%m-%d')
+first_date = datetime.datetime.strptime('2010-02-02', '%Y-%m-%d')
 last_date = datetime.datetime.strptime(dates.iloc[-1].sort_values(ascending=True)[0], '%Y-%m-%d')
 
 delta = 5
@@ -34,9 +34,11 @@ def create_all_dates_df():
         date = [col for col in date_columns if stock_name in col]
         i = 0
         while i < len(df[date]):
-            if type(df[date[0]][i]) is str:
-                index = (datetime.datetime.strptime(df[date[0]][i], '%Y-%m-%d').date() - first_date.date()).days
-                all_dates_df[stock][index] = df[stock][i]
+            if type(df[date[0]][i]) is str :
+                temp_date = datetime.datetime.strptime(df[date[0]][i], '%Y-%m-%d').date()
+                if first_date.date() <= temp_date:
+                    index = (datetime.datetime.strptime(df[date[0]][i], '%Y-%m-%d').date() - first_date.date()).days
+                    all_dates_df[stock][index] = df[stock][i]
                 i += 1
             else:
                 break
@@ -107,14 +109,14 @@ def calculate_target():
 
     arguments = []
 
-    while tmp_date.date() < last_date.date():
+    while i + delta < len(all_dates_df):
 
-        while j < delta:
+        while i + delta < len(all_dates_df) and j <= delta:
             arguments.append(all_dates_df.loc[i + delta, 'SPY_return_Adj Close'])
             j += 1
             i += 1
             
-        avg = np.nanmean(arguments, axis = 0)
+        avg = np.nanmean(arguments, axis=0)
         j = 0
         while j < 20:
             aggregate_df.loc[index, 'SPY_return_Adj Close'] = avg
@@ -122,12 +124,10 @@ def calculate_target():
             j += 1
         j = 0
 
+    aggregate_df.to_csv('aggregate_df.csv')
 
 
-create_all_dates_df()
-create_aggregate_df()
-# all_dates_df = pd.read_csv("all_dates_df.csv")
-# all_dates_df = all_dates_df.iloc[28:]
-# all_dates_df.to_csv('all_dates_df1.csv')
 
+#create_all_dates_df()
+#create_aggregate_df()
 calculate_target()
