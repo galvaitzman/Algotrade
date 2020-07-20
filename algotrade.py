@@ -9,7 +9,8 @@ date_columns = [col for col in df.columns if 'Date' in col]
 stock_columns = [col for col in df.columns if col not in date_columns and col != 'SPY_return_Adj Close']
 dates = df[date_columns[:]]
 
-first_date = datetime.datetime.strptime(dates.iloc[0].sort_values(ascending=True)[0], '%Y-%m-%d')
+# first_date = datetime.datetime.strptime(dates.iloc[0].sort_values(ascending=True)[0], '%Y-%m-%d')
+first_date = datetime.datetime.strptime('2010-02-01', '%Y-%m-%d')
 last_date = datetime.datetime.strptime(dates.iloc[-1].sort_values(ascending=True)[0], '%Y-%m-%d')
 
 delta = 5
@@ -92,7 +93,41 @@ def create_aggregate_df():
     aggregate_df.to_csv('aggregate_df.csv')
 
 
-create_all_dates_df()
-#create_aggregate_df()
+def calculate_target():
+    all_dates_df = pd.read_csv("all_dates_df.csv")
+    aggregate_df = pd.read_csv("aggregate_df.csv")
 
-#def calculate_target()
+    tmp_date = first_date
+
+    # index over all_dates_df
+    i = 0
+    j = 0
+    # index over aggregate_df
+    index = 0
+
+    arguments = []
+
+    while tmp_date.date() < last_date.date():
+
+        while j < delta:
+            arguments.append(all_dates_df.loc[i + delta, 'SPY_return_Adj Close'])
+            j += 1
+            i += 1
+            
+        avg = np.nanmean(arguments, axis = 0)
+        j = 0
+        while j < 20:
+            aggregate_df.loc[index, 'SPY_return_Adj Close'] = avg
+            index += 1
+            j += 1
+        j = 0
+
+
+
+create_all_dates_df()
+create_aggregate_df()
+# all_dates_df = pd.read_csv("all_dates_df.csv")
+# all_dates_df = all_dates_df.iloc[28:]
+# all_dates_df.to_csv('all_dates_df1.csv')
+
+calculate_target()
