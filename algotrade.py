@@ -4,6 +4,7 @@ pd.options.mode.chained_assignment = None  # default='warn'
 import numpy as np
 import datetime
 
+
 df = pd.read_csv("Commodities_Return_S&P.csv")
 date_columns = [col for col in df.columns if 'Date' in col]
 stock_columns = [col for col in df.columns if col not in date_columns and col != 'SPY_return_Adj Close']
@@ -24,6 +25,8 @@ def create_all_dates_df():
 
     while i <= (last_date.date() - first_date.date()).days:
         all_dates_df.at[i, 'Date'] = first_date + datetime.timedelta(days=i)
+        all_dates_df.at[i, 'Is Beginning of a Month'] = (first_date + datetime.timedelta(days=i)).day < 15
+        all_dates_df.at[i, 'Is Beginning of a Year'] = (first_date + datetime.timedelta(days=i)).month < 6
         i += 1
 
     all_dates_df.iloc[:, 1:] = np.nan
@@ -117,6 +120,7 @@ def calculate_target():
             i += 1
             
         avg = np.nanmean(arguments, axis=0)
+        arguments = []
         j = 0
         while j < 20:
             aggregate_df.loc[index, 'SPY_return_Adj Close'] = avg
@@ -127,7 +131,24 @@ def calculate_target():
     aggregate_df.to_csv('aggregate_df.csv')
 
 
+# def add_features():
+#     aggregate_df = pd.read_csv("aggregate_df.csv")
+#     all_dates_df = pd.read_csv("all_dates_df.csv")
+#
+#     j = 0
+#     for index, row in aggregate_df.iterrows():
+#         first_day = aggregate_df.loc[index, 'Date'][0:10]
+#         i = 0
+#         arguments = []
+#         while i < delta:
+#             arguments.append(all_dates_df.loc[j, "is end"])
 
-#create_all_dates_df()
+
+
+
+
+create_all_dates_df()
 #create_aggregate_df()
 calculate_target()
+
+
