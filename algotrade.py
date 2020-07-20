@@ -23,13 +23,13 @@ def create_all_dates_df():
     i = 0
     all_dates_df = all_dates_df.rename(columns={"XLY_return_Date": "Date"})
 
+    all_dates_df.iloc[:, 1:] = np.nan
+
     while i <= (last_date.date() - first_date.date()).days:
         all_dates_df.at[i, 'Date'] = first_date + datetime.timedelta(days=i)
         all_dates_df.at[i, 'Is Beginning of a Month'] = (first_date + datetime.timedelta(days=i)).day < 15
         all_dates_df.at[i, 'Is Beginning of a Year'] = (first_date + datetime.timedelta(days=i)).month < 6
         i += 1
-
-    all_dates_df.iloc[:, 1:] = np.nan
 
     for stock in stock_columns:
         stock_name = stock.split('_')[0]
