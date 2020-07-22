@@ -118,10 +118,28 @@ def create_aggregate_df():
 
     aggregate_df.to_csv('aggregate_df.csv')
 
-
+from sklearn import preprocessing
 def fill_nan_values():
-    # TODO add Goni function
-    pass
+    # droping column
+    if ('Unnamed: 0' in all_dates_df.columns):
+        all_dates_df.drop(axis=1, columns=['Unnamed: 0'], inplace=True)
+
+    # fill Nans
+    columns = [col for col in all_dates_df.columns if col != 'SPY_return_Adj Close' and col != 'Date']
+    # fill Nans between two values (the Nan value will be replaced with the value of upper and lower value in the same column)
+    for i in columns:
+        all_dates_df[i] = (all_dates_df[i].ffill() + all_dates_df[i].bfill()) / 2
+    # fill Nans between two values (the Nan value will be replaced with the average value in the same column)
+    all_dates_df = all_dates_df.fillna(all_dates_df.mean())
+
+    # Normalizing all columns in range (-1,1)
+    columns = all_dates_df.columns.copy()
+    min_max_scaler = preprocessing.MinMaxScaler(feature_range=(-1, 1))
+    min_max_scaler.fit_transform(all_dates_df.iloc[:, 1:])
+    all_dates_df_temp = pd.DataFrame(min_max_scaler.transform(all_dates_df.iloc[:, 1:]))
+    all_dates_df_temp.insert(loc=0, column='Date', value=all_dates_df['Date'])
+    all_dates_df_temp.columns = columns
+    all_dates_df = all_dates_df_temp
 
 
 def add_dates_part(all_dates_df: pd.DataFrame, aggregate_df: pd.DataFrame):
