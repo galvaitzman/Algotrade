@@ -129,7 +129,7 @@ def fill_nan_values():
     # fill Nans between two values (the Nan value will be replaced with the value of upper and lower value in the same column)
     for i in columns:
         all_dates_df[i] = (all_dates_df[i].ffill() + all_dates_df[i].bfill()) / 2
-    # fill Nans between two values (the Nan value will be replaced with the average value in the same column)
+    # fill Nans if there is no upper value (the Nan value will be replaced with the average value in the same column)
     all_dates_df = all_dates_df.fillna(all_dates_df.mean())
 
     # Normalizing all columns in range (-1,1)
