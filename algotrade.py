@@ -222,6 +222,37 @@ def add_change_stock_between_two_following_days(aggregate_df: pd.DataFrame):
     return aggregate_df
 
 
+def add_stock_trend(aggregate_df: pd.DataFrame):
+
+    relevant_columns = ['Day 2- Day 1', 'Day 3- Day 2', 'Day 4- Day 3', 'Day 5- Day 4']
+
+    for index, row in aggregate_df.iterrows():
+
+        sum_positive_values = 0
+        positive_trend_counter = 0
+        sum_negative_values = 0
+        negative_trend_counter = 0
+
+        for col in relevant_columns:
+            if 0 <= row[col]:
+                positive_trend_counter += 1
+                sum_positive_values += row[col]
+            else:
+                negative_trend_counter += 1
+                sum_negative_values += row[col]
+
+        aggregate_df.loc[index, 'Positive Trends'] = positive_trend_counter
+        aggregate_df.loc[index, 'Negative Trends'] = negative_trend_counter
+
+        if sum_positive_values < abs(sum_negative_values):
+            aggregate_df.loc[index, 'Is Positive Trend'] = False
+        else:
+            aggregate_df.loc[index, 'Is Positive Trend'] = True
+
+    return aggregate_df
+
+
+
 def add_features():
     """
     This function add new features to aggregate data frame.
@@ -230,11 +261,13 @@ def add_features():
     aggregate_df = pd.read_csv("aggregate_df.csv")
     # add 2 columns indicating if most of the days in the interval belongs to the beginning of the month and if the
     # interval month(s) belongs to the beginning og the year.
-    aggregate_df = add_dates_part(all_dates_df=all_dates_df,
-                                  aggregate_df=aggregate_df.iloc[:, 1:])
+    # aggregate_df = add_dates_part(all_dates_df=all_dates_df,
+    #                               aggregate_df=aggregate_df.iloc[:, 1:])
 
     # add the change in stocks for every two following days.
-    aggregate_df = add_change_stock_between_two_following_days(aggregate_df=aggregate_df)
+    # aggregate_df = add_change_stock_between_two_following_days(aggregate_df=aggregate_df)
+
+    aggregate_df = add_stock_trend(aggregate_df=aggregate_df)
 
     aggregate_df.to_csv('aggregate_df.csv')
 
