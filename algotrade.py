@@ -1,7 +1,9 @@
 import pandas as pd
+
 pd.options.mode.chained_assignment = None  # default='warn'
 import numpy as np
 import datetime
+from sklearn import preprocessing
 
 df = pd.read_csv("Commodities_Return_S&P.csv")
 date_columns = [col for col in df.columns if 'Date' in col]
@@ -58,6 +60,38 @@ def create_all_dates_df():
     all_dates_df.to_csv('all_dates_df.csv')
 
 
+def fill_nan_values_and_normalize():
+    all_dates_df = pd.read_csv("all_dates_df.csv")
+
+    # droping column
+    if ('Unnamed: 0' in all_dates_df.columns):
+        all_dates_df.drop(axis=1, columns=['Unnamed: 0'], inplace=True)
+
+    # fill Nans
+    columns = [col for col in all_dates_df.columns if col != 'SPY_return_Adj Close' and col != 'Date']
+    # fill Nans between two values (the Nan value will be replaced with the value of upper and lower value in the
+    # same column)
+    for i in columns:
+        if i != 'Is Beginning of a Month' and i != 'Is Beginning of a Year':
+            all_dates_df[i] = (all_dates_df[i].ffill() + all_dates_df[i].bfill()) / 2
+    # fill Nans if there is no upper value (the Nan value will be replaced with the average value in the same column)
+    all_dates_df = all_dates_df.fillna(all_dates_df.mean())
+
+    # Normalizing all columns in range (-1,1)
+    columns = all_dates_df.columns.copy()
+    min_max_scaler = preprocessing.MinMaxScaler(feature_range=(-1, 1))
+    min_max_scaler.fit_transform(all_dates_df.iloc[:, 1:22])
+    all_dates_df_temp = pd.DataFrame(min_max_scaler.transform(all_dates_df.iloc[:, 1:22]))
+    all_dates_df_temp.insert(loc=0, column='Date', value=all_dates_df['Date'])
+    all_dates_df_temp['Is Beginning of a Month'] = all_dates_df['Is Beginning of a Month']
+    all_dates_df_temp['Is Beginning of a Year'] = all_dates_df['Is Beginning of a Year']
+    all_dates_df_temp.columns = columns
+    all_dates_df = all_dates_df_temp
+
+    all_dates_df.to_csv('all_dates_without_nan_df.csv')
+
+
+
 def create_aggregate_df():
     """
     This function create a data frame which be used to build our model.
@@ -66,13 +100,14 @@ def create_aggregate_df():
     Each row will contain the stock value over the delta days
 
     """
-    all_dates_df = pd.read_csv("all_dates_df.csv")
+    all_dates_df = pd.read_csv("all_dates_without_nan_df.csv")
     aggregate_df = pd.DataFrame()
 
     tmp_date = first_date
 
     i = 0
 
+    print("start")
     while tmp_date.date() < last_date.date():
 
         # add 20 lines for each interval
@@ -101,8 +136,10 @@ def create_aggregate_df():
     tmp_date = first_date
     j = 0
 
+    print("1")
     # add the relevant value of stock for each day
     while i < len(aggregate_df) and 0 <= (last_date.date() - tmp_date.date()).days:
+        print(i)
         for day_counter in range(1, delta + 1):
             j = 0
             while j < 20:
@@ -115,31 +152,8 @@ def create_aggregate_df():
                     break
             tmp_date = tmp_date + datetime.timedelta(days=1)
         i += j
-
+    print("2")
     aggregate_df.to_csv('aggregate_df.csv')
-
-from sklearn import preprocessing
-def fill_nan_values():
-    # droping column
-    if ('Unnamed: 0' in all_dates_df.columns):
-        all_dates_df.drop(axis=1, columns=['Unnamed: 0'], inplace=True)
-
-    # fill Nans
-    columns = [col for col in all_dates_df.columns if col != 'SPY_return_Adj Close' and col != 'Date']
-    # fill Nans between two values (the Nan value will be replaced with the value of upper and lower value in the same column)
-    for i in columns:
-        all_dates_df[i] = (all_dates_df[i].ffill() + all_dates_df[i].bfill()) / 2
-    # fill Nans if there is no upper value (the Nan value will be replaced with the average value in the same column)
-    all_dates_df = all_dates_df.fillna(all_dates_df.mean())
-
-    # Normalizing all columns in range (-1,1)
-    columns = all_dates_df.columns.copy()
-    min_max_scaler = preprocessing.MinMaxScaler(feature_range=(-1, 1))
-    min_max_scaler.fit_transform(all_dates_df.iloc[:, 1:])
-    all_dates_df_temp = pd.DataFrame(min_max_scaler.transform(all_dates_df.iloc[:, 1:]))
-    all_dates_df_temp.insert(loc=0, column='Date', value=all_dates_df['Date'])
-    all_dates_df_temp.columns = columns
-    all_dates_df = all_dates_df_temp
 
 
 def add_dates_part(all_dates_df: pd.DataFrame, aggregate_df: pd.DataFrame):
@@ -215,7 +229,7 @@ def add_features():
     """
     This function add new features to aggregate data frame.
     """
-    all_dates_df = pd.read_csv("all_dates_df.csv")
+    all_dates_df = pd.read_csv("all_dates_without_nan_df.csv")
     aggregate_df = pd.read_csv("aggregate_df.csv")
     # add 2 columns indicating if most of the days in the interval belongs to the beginning of the month and if the
     # interval month(s) belongs to the beginning og the year.
@@ -235,7 +249,7 @@ def calculate_target():
     original data frame.
 
     """
-    all_dates_df = pd.read_csv("all_dates_df.csv")
+    all_dates_df = pd.read_csv("all_dates_without_nan_df.csv")
     aggregate_df = pd.read_csv("aggregate_df.csv")
     aggregate_df = aggregate_df.iloc[:, 1:]
 
@@ -268,7 +282,6 @@ def calculate_target():
 
 
 def build_model(test_size):
-
     from sklearn.model_selection import cross_val_score
     from sklearn.model_selection import train_test_split
     from sklearn import linear_model
@@ -303,13 +316,9 @@ def build_model(test_size):
     # TODO choose the best model
 
 
-
-
-
-
-
 # create_all_dates_df()
-# create_aggregate_df()
+# fill_nan_values_and_normalize()
+create_aggregate_df()
 # add_features()
 # calculate_target()
 # build_model(0.3)
