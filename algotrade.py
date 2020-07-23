@@ -43,7 +43,6 @@ def create_all_dates_df():
     # copy the stock value from the orginal data frame to the new data frame
     for stock in stock_columns:
         stock_name = stock.split('_')[0]
-        print(stock_name)
         date = [col for col in date_columns if stock_name in col]
         i = 0
         while i < len(df[date]):
@@ -107,7 +106,6 @@ def create_aggregate_df():
 
     i = 0
 
-    print("start")
     while tmp_date.date() < last_date.date():
 
         # add 20 lines for each interval
@@ -121,7 +119,6 @@ def create_aggregate_df():
         tmp_date = tmp_date + datetime.timedelta(days=delta)
         i = 0
 
-    print("end")
 
     # create dummies for the stock names
     df_dummies = pd.DataFrame(data=pd.get_dummies(aggregate_df['Stock Name']))
@@ -138,7 +135,6 @@ def create_aggregate_df():
     tmp_date = first_date
     j = 0
 
-    print("1")
     # add the relevant value of stock for each day
     while i < len(aggregate_df) and 0 <= (last_date.date() - tmp_date.date()).days:
         print(i)
@@ -154,7 +150,6 @@ def create_aggregate_df():
                     break
             tmp_date = tmp_date + datetime.timedelta(days=1)
         i += j
-    print("2")
     aggregate_df.to_csv('aggregate_df.csv')
 
 
@@ -320,7 +315,7 @@ def build_model(test_size):
 
 # create_all_dates_df()
 # fill_nan_values_and_normalize()
-create_aggregate_df()
-# add_features()
-# calculate_target()
+# create_aggregate_df()
+add_features()
+calculate_target()
 # build_model(0.3)
