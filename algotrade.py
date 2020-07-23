@@ -319,7 +319,7 @@ def build_model(test_size):
 
     df = pd.read_csv("aggregate_df.csv")
     features = ['Day 1', 'Day 2', 'Day 3', 'Day 4', 'Day 5', 'Day 2- Day 1', 'Day 3- Day 2', 'Day 4- Day 3',
-                'Day 5- Day 4', 'Is Beginning of a Month', 'Is Beginning of a Year', 'Positive Trends',
+                'Day 5- Day 4', 'Positive Trends',
                 'Negative Trends', 'Is Positive Trend']
 
     X = df[features]
@@ -335,7 +335,7 @@ def build_model(test_size):
     for model in models:
         model.fit(X=X_train, y=y_train)
         # 10 CROSS VALIDATION
-        scores = cross_val_score(model, X, y, cv=10)
+        scores = cross_val_score(model, X, y, cv=10, scoring="neg_mean_squared_error")
         accuracy = scores.mean()
         models_train_accuracy.append(accuracy)
         # predict x_test and calculate mse
@@ -343,7 +343,7 @@ def build_model(test_size):
         mse = mean_squared_error(y_test, y_pred)
         MSE.append(mse)
 
-        print(type(model) + ", 10 cross validation score: " + accuracy + " , mse: " + mse)
+        print("10 cross validation score: " + str(accuracy) + " , mse: " + str(mse))
 
 
 # create_all_dates_df()
@@ -351,4 +351,4 @@ def build_model(test_size):
 # create_aggregate_df()
 # add_features()
 # calculate_target()
-# build_model(0.3)
+build_model(0.3)
