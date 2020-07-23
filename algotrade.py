@@ -261,11 +261,11 @@ def add_features():
     aggregate_df = pd.read_csv("aggregate_df.csv")
     # add 2 columns indicating if most of the days in the interval belongs to the beginning of the month and if the
     # interval month(s) belongs to the beginning og the year.
-    # aggregate_df = add_dates_part(all_dates_df=all_dates_df,
-    #                               aggregate_df=aggregate_df.iloc[:, 1:])
+    aggregate_df = add_dates_part(all_dates_df=all_dates_df,
+                                  aggregate_df=aggregate_df.iloc[:, 1:])
 
     # add the change in stocks for every two following days.
-    # aggregate_df = add_change_stock_between_two_following_days(aggregate_df=aggregate_df)
+    aggregate_df = add_change_stock_between_two_following_days(aggregate_df=aggregate_df)
 
     aggregate_df = add_stock_trend(aggregate_df=aggregate_df)
 
@@ -319,7 +319,9 @@ def build_model(test_size):
 
     df = pd.read_csv("aggregate_df.csv")
     features = ['Day 1', 'Day 2', 'Day 3', 'Day 4', 'Day 5', 'Day 2- Day 1', 'Day 3- Day 2', 'Day 4- Day 3',
-                'Day 5- Day 4', 'Is Beginning of a Month', 'Is Beginning of a Year']
+                'Day 5- Day 4', 'Is Beginning of a Month', 'Is Beginning of a Year', 'Positive Trends',
+                'Negative Trends', 'Is Positive Trend']
+
     X = df[features]
     y = df['SPY_return_Adj Close']
 
@@ -331,24 +333,22 @@ def build_model(test_size):
     MSE = []
 
     for model in models:
-        # TODO not sure if we need to fit the model because we were requested to use k-cross validation
         model.fit(X=X_train, y=y_train)
         # 10 CROSS VALIDATION
         scores = cross_val_score(model, X, y, cv=10)
         accuracy = scores.mean()
         models_train_accuracy.append(accuracy)
-        # TODO but we were requested to compare models using MSE so Im not sure what we're a supposed to do
         # predict x_test and calculate mse
         y_pred = model.predict(X=X_test)
         mse = mean_squared_error(y_test, y_pred)
         MSE.append(mse)
 
-    # TODO choose the best model
+        print(type(model) + ", 10 cross validation score: " + accuracy + " , mse: " + mse)
 
 
 # create_all_dates_df()
 # fill_nan_values_and_normalize()
 # create_aggregate_df()
-add_features()
-calculate_target()
+# add_features()
+# calculate_target()
 # build_model(0.3)
