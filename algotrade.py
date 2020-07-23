@@ -121,6 +121,8 @@ def create_aggregate_df():
         tmp_date = tmp_date + datetime.timedelta(days=delta)
         i = 0
 
+    print("end")
+
     # create dummies for the stock names
     df_dummies = pd.DataFrame(data=pd.get_dummies(aggregate_df['Stock Name']))
     aggregate_df = aggregate_df.join(df_dummies)
