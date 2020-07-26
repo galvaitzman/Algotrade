@@ -311,44 +311,10 @@ def calculate_target():
     aggregate_df.to_csv('aggregate_df.csv')
 
 
-def build_model(test_size):
-    from sklearn.model_selection import cross_val_score
-    from sklearn.model_selection import train_test_split
-    from sklearn import linear_model
-    from sklearn.metrics import mean_squared_error
 
-    df = pd.read_csv("aggregate_df.csv")
-    features = ['Day 1', 'Day 2', 'Day 3', 'Day 4', 'Day 5', 'Day 2- Day 1', 'Day 3- Day 2', 'Day 4- Day 3',
-                'Day 5- Day 4', 'Positive Trends',
-                'Negative Trends', 'Is Positive Trend']
+create_all_dates_df()
+fill_nan_values_and_normalize()
+create_aggregate_df()
+add_features()
+calculate_target()
 
-    X = df[features]
-    y = df['SPY_return_Adj Close']
-
-    X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=test_size)
-
-    # TODO add more relevant models
-    models = [linear_model.LinearRegression(), linear_model.Ridge(alpha=.5)]
-    models_train_accuracy = []
-    MSE = []
-
-    for model in models:
-        model.fit(X=X_train, y=y_train)
-        # 10 CROSS VALIDATION
-        scores = cross_val_score(model, X, y, cv=10, scoring="neg_mean_squared_error")
-        accuracy = scores.mean()
-        models_train_accuracy.append(accuracy)
-        # predict x_test and calculate mse
-        y_pred = model.predict(X=X_test)
-        mse = mean_squared_error(y_test, y_pred)
-        MSE.append(mse)
-
-        print("10 cross validation score: " + str(accuracy) + " , mse: " + str(mse))
-
-
-# create_all_dates_df()
-# fill_nan_values_and_normalize()
-# create_aggregate_df()
-# add_features()
-# calculate_target()
-build_model(0.3)
