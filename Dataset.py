@@ -5,7 +5,7 @@ import numpy as np
 import datetime
 from sklearn import preprocessing
 
-df = pd.read_csv("Commodities_Return_S&P.csv")
+df = pd.read_csv("datasets/Commodities_Return_S&P.csv")
 date_columns = [col for col in df.columns if 'Date' in col]
 stock_columns = [col for col in df.columns if col not in date_columns and col != 'SPY_return_Adj Close']
 dates = df[date_columns[:]]
@@ -60,7 +60,7 @@ def create_all_dates_df():
 
 
 def fill_nan_values_and_normalize():
-    all_dates_df = pd.read_csv("all_dates_df.csv")
+    all_dates_df = pd.read_csv("datasets/all_dates_df.csv")
 
     # droping column
     if ('Unnamed: 0' in all_dates_df.columns):
@@ -99,7 +99,7 @@ def create_aggregate_df():
     Each row will contain the stock value over the delta days
 
     """
-    all_dates_df = pd.read_csv("all_dates_without_nan_df.csv")
+    all_dates_df = pd.read_csv("datasets/all_dates_without_nan_df.csv")
     aggregate_df = pd.DataFrame()
 
     tmp_date = first_date
@@ -257,8 +257,8 @@ def add_features():
     """
     This function add new features to aggregate data frame.
     """
-    all_dates_df = pd.read_csv("all_dates_without_nan_df.csv")
-    aggregate_df = pd.read_csv("aggregate_df.csv")
+    all_dates_df = pd.read_csv("datasets/all_dates_without_nan_df.csv")
+    aggregate_df = pd.read_csv("datasets/aggregate_df.csv")
     # add 2 columns indicating if most of the days in the interval belongs to the beginning of the month and if the
     # interval month(s) belongs to the beginning og the year.
     aggregate_df = add_dates_part(all_dates_df=all_dates_df,
@@ -279,8 +279,8 @@ def calculate_target():
     original data frame.
 
     """
-    all_dates_df = pd.read_csv("all_dates_without_nan_df.csv")
-    aggregate_df = pd.read_csv("aggregate_df.csv")
+    all_dates_df = pd.read_csv("datasets/all_dates_without_nan_df.csv")
+    aggregate_df = pd.read_csv("datasets/aggregate_df.csv")
     aggregate_df = aggregate_df.iloc[:, 1:]
 
     # index over all_dates_df

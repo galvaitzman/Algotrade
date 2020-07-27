@@ -10,7 +10,7 @@ from sklearn.metrics import confusion_matrix, accuracy_score
 from sklearn.model_selection import GridSearchCV
 from sklearn.metrics import mean_squared_error
 
-df = pd.read_csv("aggregate_df.csv")
+df = pd.read_csv("datasets/aggregate_df.csv")
 
 all_features = ['Date', 'Stock Name',
                 'BIL_return_Adj Close', 'EEM_return_Adj Close', 'GLD_return_Adj Close',
@@ -24,6 +24,7 @@ all_features = ['Date', 'Stock Name',
                 'Is Beginning of a Year', 'Day 2- Day 1', 'Day 3- Day 2',
                 'Day 4- Day 3', 'Day 5- Day 4', 'SPY_return_Adj Close',
                 'Positive Trends', 'Negative Trends', 'Is Positive Trend']
+
 all_features_for_prediction = [
     'BIL_return_Adj Close', 'EEM_return_Adj Close', 'GLD_return_Adj Close',
     'GSG_return_Adj Close', 'IEI_return_Adj Close', 'LQD_return_Adj Close',
@@ -45,6 +46,7 @@ features_to_use_1 = [
     'XLP_return_Adj Close', 'XLU_return_Adj Close', 'XLV_return_Adj Close',
     'XLY_return_Adj Close', 'XTL_return_Adj Close', 'Day 1', 'Day 2',
     'Day 3', 'Day 4', 'Day 5']
+
 features_to_use_2 = [
     'BIL_return_Adj Close', 'EEM_return_Adj Close', 'GLD_return_Adj Close',
     'GSG_return_Adj Close', 'IEI_return_Adj Close', 'LQD_return_Adj Close',
@@ -54,6 +56,8 @@ features_to_use_2 = [
     'XLP_return_Adj Close', 'XLU_return_Adj Close', 'XLV_return_Adj Close',
     'XLY_return_Adj Close', 'XTL_return_Adj Close', 'Day 2- Day 1', 'Day 3- Day 2',
     'Day 4- Day 3', 'Day 5- Day 4']
+
+
 features_to_use_3 = [
     'BIL_return_Adj Close', 'EEM_return_Adj Close', 'GLD_return_Adj Close',
     'GSG_return_Adj Close', 'IEI_return_Adj Close', 'LQD_return_Adj Close',
@@ -63,6 +67,8 @@ features_to_use_3 = [
     'XLP_return_Adj Close', 'XLU_return_Adj Close', 'XLV_return_Adj Close',
     'XLY_return_Adj Close', 'XTL_return_Adj Close', 'Day 2- Day 1', 'Day 3- Day 2',
     'Day 4- Day 3', 'Day 5- Day 4', 'Positive Trends', 'Negative Trends', 'Is Positive Trend']
+
+
 features_to_use_4 = [
     'BIL_return_Adj Close', 'EEM_return_Adj Close', 'GLD_return_Adj Close',
     'GSG_return_Adj Close', 'IEI_return_Adj Close', 'LQD_return_Adj Close',
@@ -87,13 +93,15 @@ all_results = pd.DataFrame(columns=columns_for_all_results)
 
 features = [features_to_use_1, features_to_use_2, features_to_use_3, features_to_use_4]
 
+# dictionary of models to test which model with which parameter perform the best result
 models = {"LinearRegression": [linear_model.LinearRegression(), dict(normalize=[False, True])],
           "linear_model.Ridge": [linear_model.Ridge(), dict(alpha=[0.01, 0.05, 0.1])],
           "Lasso": [linear_model.Lasso(), dict(alpha=[0.01, 0.05, 0.1])],
           "RandomForestRegressor": [RandomForestRegressor(), dict(n_estimators=[10, 50, 100, 200])]}
 
-for i in features:
-    for key, value in models.items():
+
+for i in features: # for each set of features
+    for key, value in models.items(): # for each model
         current_run_for_best_result = []
         current_run_for_all_results = []
         X = df[i]
@@ -101,6 +109,7 @@ for i in features:
         start_time = time.time()
         model = value[0]
         model_parameters = value[1]
+        # perform grid search with 10-cross validation for each given model parameter
         grid = GridSearchCV(model, model_parameters, refit=True, verbose=10, n_jobs=-1, cv=10)
         best = grid.fit(X, y)
         # collect data of the best model with the best params
