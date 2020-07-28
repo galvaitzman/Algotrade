@@ -110,6 +110,8 @@ for i in features: # for each set of features
         model = value[0]
         model_parameters = value[1]
         # perform grid search with 10-cross validation for each given model parameter
+        # the gridSearcherCV perform the parameter tuning and return the model with it's best parameter for each
+        # feature set.
         grid = GridSearchCV(model, model_parameters, refit=True, verbose=10, n_jobs=-1, cv=10)
         best = grid.fit(X, y)
         # collect data of the best model with the best params
